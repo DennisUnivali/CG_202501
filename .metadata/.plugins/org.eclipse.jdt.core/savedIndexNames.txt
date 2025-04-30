@@ -1,15 +1,4 @@
 INDEX VERSION 1.131+C:\Users\Denni\OneDrive - UNIVALI\DISCIPLINAS\Disciplina Computação Grafica - CCO\20251\work\.metadata\.plugins\org.eclipse.jdt.core
-4237702342.index
-2969876717.index
-1060715753.index
-823357136.index
-3298160746.index
-1255961222.index
-3327185621.index
 1865797976.index
-2531397560.index
-905700288.index
-3005081966.index
-3303369794.index
-1885355218.index
 997384706.index
+1150343886.index
