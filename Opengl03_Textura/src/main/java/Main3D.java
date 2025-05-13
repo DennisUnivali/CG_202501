@@ -33,6 +33,8 @@ public class Main3D {
 	
 	float angCanonViewZ = 0;
 	
+	float cameraXAng = 0;
+	
 	public Random rnd = new Random();
 
 	public void run() {
@@ -101,6 +103,14 @@ public class Main3D {
 			if ( key == GLFW_KEY_B) {
 				angCanonViewZ-=5;
 			}
+			
+			if ( key == GLFW_KEY_UP) {
+				cameraXAng-=5;
+			}
+			
+			if ( key == GLFW_KEY_DOWN) {
+				cameraXAng+=5;
+			}
 		
 		});
 
@@ -155,21 +165,26 @@ public class Main3D {
 
 		ObjModel tankObj = new ObjModel();
 		tankObj.loadObj("tank.obj");
-		tankObj.desenhaTextureMapping();
+		//tankObj.desenhaTextureMapping();
 		
 		ObjModel mig29 = new ObjModel();
-		mig29.loadObj("Mig_29_obj.obj");
+		mig29.loadObj("SR71.obj");
+		mig29.desenhaTextureMapping();
 		
 		ObjModel x35 = new ObjModel();
 		x35.loadObj("x-35_obj.obj");
 		
+		//ObjModel aim120 = new ObjModel();
+		//aim120.loadObj("AIM120D.obj");
+		
 		
 		ArrayList<objeto3D> lista = new ArrayList<>();
-		for(int i = 0; i < 10; i++) {
-			objeto3D obj = new objeto3D(x35);
-			obj.x = (rnd.nextFloat()*10)-5;
-			obj.y = (rnd.nextFloat()*10)-5;
-			obj.z = (-(rnd.nextFloat()*5))-4;
+		for(int i = 0; i < 1; i++) {
+			objeto3D obj = new objeto3D(mig29);
+			obj.x = (rnd.nextFloat()*4)-2;
+			obj.y = (rnd.nextFloat()*4)-2;
+			obj.z = (-(rnd.nextFloat()*3))-2;
+			obj.scale = 0.1f;
 			lista.add(obj);
 		}
 		
@@ -230,6 +245,7 @@ public class Main3D {
 			
 			glBindTexture ( GL_TEXTURE_2D, tgato );
 			
+			glRotatef(cameraXAng, 1.0f, 0.0f, 0.0f);
 			
 			glPushMatrix();
 
@@ -296,9 +312,9 @@ public class Main3D {
 			
 			glPopMatrix();
 			
-//			for(int i = 0; i < lista.size();i++) {
-//				lista.get(i).desenha(tx35);
-//			}
+			for(int i = 0; i < lista.size();i++) {
+				lista.get(i).desenha(tx35);
+			}
 			//desenhax35(tx35, x35);
 			
 

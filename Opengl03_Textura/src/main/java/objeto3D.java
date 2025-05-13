@@ -14,6 +14,8 @@ public class objeto3D {
 	float y;
 	float z;
 	
+	float scale = 0.01f;
+	
 	public objeto3D(ObjModel modelo) {
 		this.modelo = modelo;
 	}
@@ -22,7 +24,7 @@ public class objeto3D {
 		glBindTexture ( GL_TEXTURE_2D, texture );
 		
 		glTranslatef(x, y, z);
-		glScalef(0.01f, 0.01f, 0.01f);
+		glScalef(scale, scale, scale);
 		modelo.desenhaSe();
 		
 		glPopMatrix();

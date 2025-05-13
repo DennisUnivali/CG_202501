@@ -215,6 +215,9 @@ public class ObjModel {
 					} catch (Exception e) {
 					}
 				}
+				if(index==4) {
+					continue;
+				}
 
 				face.v[index] = valorestmp[0];
 				face.n[index] = valorestmp[2];
@@ -271,6 +274,10 @@ public class ObjModel {
 				vn1.Normalize();
 				vn2.Normalize();
 				vn3.Normalize();
+				
+				if(face.t[0]==-1) {
+					continue;
+				}
 
 				Vector2f vt1 = vt.get(face.t[0] - 1);
 				Vector2f vt2 = vt.get(face.t[1] - 1);
@@ -312,6 +319,10 @@ public class ObjModel {
 				vn2.Normalize();
 				vn3.Normalize();
 				vn4.Normalize();
+				
+				if(face.t[0]==-1) {
+					continue;
+				}
 
 				Vector2f vt1 = vt.get(face.t[0] - 1);
 				Vector2f vt2 = vt.get(face.t[1] - 1);
@@ -472,14 +483,23 @@ public class ObjModel {
 			Face3D face = f.get(i);
 
 			if (face.nvertices == 3) {
+				if(face.t[0]==-1) {
+					continue;
+				}
 				Vector2f vt1 = vt.get(face.t[0] - 1);
 				Vector2f vt2 = vt.get(face.t[1] - 1);
 				Vector2f vt3 = vt.get(face.t[2] - 1);
+				
+				//System.out.println(""+vt1.x+" "+vt1.y);
 				
 				dbg.drawLine((int)(vt1.x*tw),(int)(vt1.y*th), (int)(vt2.x*tw), (int)(vt2.y*th));
 				dbg.drawLine((int)(vt2.x*tw),(int)(vt2.y*th), (int)(vt3.x*tw), (int)(vt3.y*th));
 				dbg.drawLine((int)(vt3.x*tw),(int)(vt3.y*th), (int)(vt1.x*tw), (int)(vt1.y*th));
 			} else if (face.nvertices == 4) {
+				if(face.t[0]==-1) {
+					continue;
+				}
+				
 				Vector2f vt1 = vt.get(face.t[0] - 1);
 				Vector2f vt2 = vt.get(face.t[1] - 1);
 				Vector2f vt3 = vt.get(face.t[2] - 1);
