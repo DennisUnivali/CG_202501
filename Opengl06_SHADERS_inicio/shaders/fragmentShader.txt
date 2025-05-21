@@ -1,0 +1,24 @@
+#version 330 core
+
+uniform sampler2D tex;
+
+in vec3 color;
+in vec3 norm;
+in vec2 uv;
+
+out vec4 out_Color;
+
+void main(void){
+	vec4 colort = texture2D(tex,uv);
+	
+	//vec4 newColor = vec4((colort.x*0.5+uv.x*1.5)/2,(colort.y*0.5+uv.y*1.5)/2,colort.z,colort.w);
+	vec4 newColor = vec4(colort.x,colort.y,colort.z,colort.w);
+	
+	if(newColor.x>0.6&& newColor.y > 0.6 && newColor.z > 0.6){
+		vec4 azullegal = vec4(0.2,0.4,1.0,1.0);
+		newColor = (newColor+azullegal)/2;
+	}
+	
+	out_Color = vec4(newColor);
+
+}
