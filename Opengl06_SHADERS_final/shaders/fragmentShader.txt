@@ -1,0 +1,19 @@
+#version 330 core
+
+uniform sampler2D tex;
+
+in vec3 color;
+in vec3 norm;
+in vec2 uv;
+
+out vec4 out_Color;
+
+void main(void){
+	vec4 colort = texture2D(tex,uv);
+	
+	//vec4 newColor = vec4((colort.x+uv.x)/2,(colort.y+uv.y)/2,colort.z,colort.w);
+	vec4 newColor = vec4(colort.x,colort.y,colort.z,colort.w);
+	
+	out_Color = vec4(newColor);
+
+}

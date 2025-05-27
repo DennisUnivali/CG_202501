@@ -3,8 +3,15 @@ import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
+import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
 
+import Model.VboCube;
+import obj.Cubo3D;
 import obj.ObjModel;
+import obj.Object3D;
+import shaders.StaticShader;
 import util.TextureLoader;
 
 import java.awt.image.BufferedImage;
@@ -18,6 +25,11 @@ import java.util.Random;
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL20.glGetUniformLocation;
+import static org.lwjgl.opengl.GL20.glUniform1i;
+import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -26,16 +38,16 @@ public class Main3D {
 	// The window handle
 	private long window;
 	
-	float angTankViewX = 0;
-	float angTankViewY = 0;
-	
-	float angTowerViewY = 0;
-	
-	float angCanonViewZ = 0;
-	
-	float cameraXAng = 0;
+	float viewAngX = 0;
+	float viewAngY = 0;
+	float scale = 1.0f;
 	
 	public Random rnd = new Random();
+	
+	VboCube vboc;
+	StaticShader shader;
+	ArrayList<Object3D> listaObjetos = new ArrayList<>();
+	
 
 	public void run() {
 		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -67,7 +79,7 @@ public class Main3D {
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
 		// Create the window
-		window = glfwCreateWindow(800, 600, "Hello World!", NULL, NULL);
+		window = glfwCreateWindow(1500, 1000, "Hello World!", NULL, NULL);
 		if (window == NULL)
 			throw new RuntimeException("Failed to create the GLFW window");
 
@@ -78,38 +90,22 @@ public class Main3D {
 				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
 		
 			if ( key == GLFW_KEY_W) {
-				angTankViewX+=5;
+				viewAngX+=5;
 			}
 			if ( key == GLFW_KEY_S) {
-				angTankViewX-=5;
+				viewAngX-=5;
 			}
 			if ( key == GLFW_KEY_A) {
-				angTankViewY+=5;
+				viewAngY+=5;
 			}
 			if ( key == GLFW_KEY_D) {
-				angTankViewY-=5;
+				viewAngY-=5;
 			}
-			
-			if ( key == GLFW_KEY_N) {
-				angTowerViewY+=5;
+			if ( key == GLFW_KEY_Z) {
+				scale = scale*1.1f;
 			}
-			if ( key == GLFW_KEY_M) {
-				angTowerViewY-=5;
-			}
-			
-			if ( key == GLFW_KEY_G) {
-				angCanonViewZ+=5;
-			}
-			if ( key == GLFW_KEY_B) {
-				angCanonViewZ-=5;
-			}
-			
-			if ( key == GLFW_KEY_UP) {
-				cameraXAng-=5;
-			}
-			
-			if ( key == GLFW_KEY_DOWN) {
-				cameraXAng+=5;
+			if ( key == GLFW_KEY_X) {
+				scale = scale*0.9f;
 			}
 		
 		});
@@ -148,13 +144,49 @@ public class Main3D {
 		GL.createCapabilities();
 
 		
-		BufferedImage imggato = TextureLoader.loadImage("texturaCamoCat.jpg");
+		
+		BufferedImage imggato = TextureLoader.loadImage("texturaGato.jpeg");
+		
+		vboc = new VboCube();
+		vboc.load();
+		shader = new StaticShader();
+		
+		//Cubo3D cubo = new Cubo3D(0.0f, 0.0f, -1.0f, 0.2f);
+		//cubo.vbocube = vboc;
+		
+		//ObjModel x35 = new ObjModel();
+		//x35.loadObj("x-35_obj.obj");
+		//x35.load();
+		
+		ObjModel f101 = new ObjModel();
+		f101.loadObj("..\\OBJ\\f104starfighter.obj");
+		f101.load();
+		System.out.println("Faces: "+f101.f.size());
+		
+		ObjModel sr71 = new ObjModel();
+		//sr71.loadObj("..\\OBJ\\SR71.obj");
+		sr71.loadObj("..\\OBJ\\11805_airplane_v2_L2.obj");
+		sr71.load();
+		System.out.println("Faces: "+sr71.f.size());
+		
+		for(int i = 0; i < 100; i++) {
+			//Cubo3D cubo = new Cubo3D(rnd.nextFloat()*2-1,rnd.nextFloat()*2-1, rnd.nextFloat()*2-1, rnd.nextFloat()*0.005f+0.0001f);
+			//cubo.model = x35;
+			Cubo3D cubo = new Cubo3D(rnd.nextFloat()*2-1,rnd.nextFloat()*2-1, rnd.nextFloat()*2-1, rnd.nextFloat()*0.0005f+0.0001f);
+			cubo.model = sr71;
+			cubo.vx = rnd.nextFloat()*0.4f-0.2f;
+			cubo.vy = rnd.nextFloat()*0.4f-0.2f;
+			cubo.vz = rnd.nextFloat()*0.4f-0.2f;
+			cubo.rotvel = rnd.nextFloat()*9;
+			listaObjetos.add(cubo);
+		}
+		
 		BufferedImage gatorgba = new BufferedImage(imggato.getWidth(), imggato.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		gatorgba.getGraphics().drawImage(imggato, 0, 0, null);
 		int tgato = TextureLoader.loadTexture(imggato);
 		System.out.println("tgato "+tgato);
 		
-		BufferedImage imgx35 = TextureLoader.loadImage("x35text.jpg");
+		/*BufferedImage imgx35 = TextureLoader.loadImage("x35text.jpg");
 		int tx35 = TextureLoader.loadTexture(imgx35);
 		System.out.println("tx35 "+tx35);
 
@@ -164,30 +196,25 @@ public class Main3D {
 
 
 		ObjModel tankObj = new ObjModel();
-		tankObj.loadObj("..//OBJ//tank.obj");
-		//tankObj.desenhaTextureMapping();
+		tankObj.loadObj("tank.obj");
 		
 		ObjModel mig29 = new ObjModel();
-		//mig29.loadObj("..\\OBJ\\SR71.obj");
-		mig29.loadObj("..\\OBJ\\f104starfighter.obj");
-		mig29.desenhaTextureMapping();
+		mig29.loadObj("Mig_29_obj.obj");
 		
 		ObjModel x35 = new ObjModel();
-		x35.loadObj("..\\OBJ\\x-35_obj.obj");
-		
-		//ObjModel aim120 = new ObjModel();
-		//aim120.loadObj("AIM120D.obj");
+		x35.loadObj("x-35_obj.obj");
 		
 		
 		ArrayList<objeto3D> lista = new ArrayList<>();
-		for(int i = 0; i < 1; i++) {
-			objeto3D obj = new objeto3D(mig29);
-			obj.x = (rnd.nextFloat()*4)-2;
-			obj.y = (rnd.nextFloat()*4)-2;
-			obj.z = (-(rnd.nextFloat()*3))-2;
-			obj.scale = 0.1f;
+		for(int i = 0; i < 10; i++) {
+			objeto3D obj = new objeto3D(x35);
+			obj.x = (rnd.nextFloat()*10)-5;
+			obj.y = (rnd.nextFloat()*10)-5;
+			obj.z = (-(rnd.nextFloat()*5))-4;
 			lista.add(obj);
 		}
+		
+		*/
 		
 		// Run the rendering loop until the user has attempted to close
 		// the window or has pressed the ESCAPE key.
@@ -195,7 +222,7 @@ public class Main3D {
 		int frame = 0;
 		long lasttime = System.currentTimeMillis();
 
-		int angle = 0;
+		float angle = 0;
 		
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -203,7 +230,18 @@ public class Main3D {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		
+		FloatBuffer matrixBuffer = MemoryUtil.memAllocFloat(16);
+		long ultimoTempo = System.currentTimeMillis();
 		while (!glfwWindowShouldClose(window)) {
+			
+			long diftime = System.currentTimeMillis()-ultimoTempo;
+			ultimoTempo = System.currentTimeMillis();
+			
+			for(int i = 0; i < listaObjetos.size();i++) {
+				listaObjetos.get(i).SimulaSe(diftime);
+			}
+			
+			angle+=0.1;
 			
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
@@ -227,98 +265,58 @@ public class Main3D {
 			float[] lightDiffuse2 = { 1.0f, 1.0f, 1.0f, 1.0f };
 			float[] lightPosition2 = { -5f, -5f, 0f, 1.0f };
 
-			glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbient2);
-			glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuse2);
-			glLightfv(GL_LIGHT1, GL_POSITION, lightPosition2);
-
-			glEnable(GL_LIGHT0);
-			//glEnable(GL_LIGHT1);
+			shader.start();
 			
-			glEnable(GL_COLOR_MATERIAL);
-			//glColorMaterial(GL_FRONT, GL_DIFFUSE);
-
-			glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-
-			angle += 1;
 			glEnable(GL_DEPTH_TEST);
 			
-			glEnable (GL_TEXTURE_2D);
+	        glActiveTexture(GL_TEXTURE0);
+	        glBindTexture(GL_TEXTURE_2D, tgato);
+	        
+	        int loctexture = glGetUniformLocation(shader.programID, "tex");
+	        glUniform1i(loctexture, 0);
 			
-			glBindTexture ( GL_TEXTURE_2D, tgato );
 			
-			glRotatef(cameraXAng, 1.0f, 0.0f, 0.0f);
 			
-			glPushMatrix();
-
-			glTranslatef(0, 0, -4);
-			glScalef(0.01f, 0.01f, 0.01f);
-			//glTranslatef(0, 0, 50);
-			glRotatef(angTankViewX, 1.0f, 0.0f, 0.0f);
-			glRotatef(angTankViewY, 0.0f, 1.0f, 0.0f);
-			//nomePlane04--
-			//nomeBox01--
-			//nomeBox02--
-
-			tankObj.desenhaseGrupo("Box02");
+			Matrix4f view = new Matrix4f();
+			view.setIdentity();
 			
-			glPushMatrix();
+			view.scale(new Vector3f(scale,scale,scale));
+			view.rotate(viewAngX*0.0174532f, new Vector3f(1,0,0));
+			view.rotate(viewAngY*0.0174532f, new Vector3f(0,1,0));
+			view.translate(new Vector3f(0,0,0));
+			int viewlocation = glGetUniformLocation(shader.programID, "view");
 			
-			glTranslatef(0, 0, -10);
-			glRotatef(angTowerViewY, 0.0f, 1.0f, 0.0f);
-			glTranslatef(0, 0, 10);
+//			view.storeTranspose(matrixBuffer);
+//			matrixBuffer.flip();
+//			glUniformMatrix4fv(viewlocation, false, matrixBuffer);
 			
-			tankObj.desenhaseGrupo("Plane04");
 			
-	
-			glPushMatrix();
-			
-			glTranslatef(20,40, 0);
-			glRotatef(angCanonViewZ, 0.0f, 0.0f, 1.0f);
-			glTranslatef(-20, -40, 0);
-			
-			tankObj.desenhaseGrupo("Box01");
-			glPopMatrix();
-			
-			glPopMatrix();
-			//glLoadIdentity();
-			
-			//glScalef(0.01f, 0.01f, 0.01f);
-			//mig29.desenhaSe();
-			glPopMatrix();
-			
-			glPushMatrix();
-			
-			glTranslatef(0, 2, -4);
-			
-			glColor3f(1f, 1f, 1f);
-			glBegin(GL_TRIANGLE_STRIP);
-			
-			glTexCoord2f(1.0f, 1.0f);
-			glNormal3f(0.0f, 0.0f, 1.0f);
-			glVertex3f(-0.5f, -0.5f, -2.0f);
-			
-			glTexCoord2f(1.0f, 0.0f);
-			glNormal3f(0.0f, 0.0f, 1.0f);
-			glVertex3f(-0.5f, 0.5f, -2.0f);
-			
-			glTexCoord2f(0.0f, 1.0f);
-			glNormal3f(0.0f, 0.0f, 1.0f);
-			glVertex3f(0.5f, -0.5f, -2.0f);
-			
-			glTexCoord2f(0.0f, 0.0f);
-			glNormal3f(0.0f, 0.0f, 1.0f);
-			glVertex3f(0.5f, 0.5f, -2.0f);
-			
-			glEnd();
-			
-			glPopMatrix();
-			
-			for(int i = 0; i < lista.size();i++) {
-				lista.get(i).desenha(tx35);
+			for(int i = 0; i < listaObjetos.size();i++) {
+				listaObjetos.get(i).DesenhaSe(shader);
 			}
-			//desenhax35(tx35, x35);
 			
-
+			Matrix4f modelm = new Matrix4f();
+			modelm.setIdentity();
+			
+			//System.out.println(""+x+" "+y+" "+z);
+			modelm.translate(new Vector3f(0,0,0));
+			modelm.scale(new Vector3f(0.1f,0.1f,0.1f));
+			//modelm.rotate(ang,new Vector3f(0.0f,1.0f,0.0f));
+			int modellocation = glGetUniformLocation(shader.programID, "model");
+			
+			modelm.storeTranspose(matrixBuffer);
+			matrixBuffer.flip();
+			glUniformMatrix4fv(modellocation, false, matrixBuffer);
+			
+			view.storeTranspose(matrixBuffer);
+			matrixBuffer.flip();
+			glUniformMatrix4fv(viewlocation, false, matrixBuffer);
+			
+			f101.draw();
+			
+			
+			shader.stop();
+			
 			glfwSwapBuffers(window); // swap the color buffers
 
 			// Poll for window events. The key callback above will only be
