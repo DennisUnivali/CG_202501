@@ -1,0 +1,25 @@
+#version 330 core
+
+in vec3 position; //att 0
+in vec3 cor; // att 1
+in vec3 normal; // att 2
+in vec2 textuv; // att 3
+
+uniform mat4 model;
+uniform mat4 view;
+//uniform mat4 projection;
+
+out vec3 color;
+out vec3 norm;
+out vec2 uv;
+
+void main(void){
+
+	gl_Position = (vec4(position,1.0)*model*view)*vec4(1,1,0.01,1);
+	gl_Position = vec4(gl_Position.xyz/(1+gl_Position.z*4),1.0);
+	norm = normal;
+	uv = vec2(textuv.y,1-textuv.x);
+	color = vec3(cor.x,cor.y,cor.z);
+	//color = vec3((normal.x+1)*0.5,(normal.y+1)*0.5,(normal.z+1)*0.5);
+	//color = vec3(textuv.x,0,textuv.y);
+}
