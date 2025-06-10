@@ -1,0 +1,26 @@
+#version 330 core
+
+in vec3 position;
+in vec3 cor;
+in vec3 normal;
+in vec2 textuv;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+out vec3 color;
+out vec3 norm;
+out vec2 uv;
+
+void main(void){
+
+	mat4 modelview = model*view;
+	//mat4 modelview = view*model;
+	gl_Position = (vec4(position,1.0)*modelview*projection);
+	norm = normal;
+	uv = vec2(textuv.y,1-textuv.x);
+	color = vec3(cor.x,cor.y,cor.z);
+	//color = vec3((normal.x+1)*0.5,(normal.y+1)*0.5,(normal.z+1)*0.5);
+	//color = vec3(textuv.x,0,textuv.y);
+}
