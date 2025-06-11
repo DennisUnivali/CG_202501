@@ -1,0 +1,46 @@
+#version 330 core
+
+in vec3 color;
+in vec3 norm;
+in vec2 uv;
+
+uniform sampler2D tex;
+uniform int ligaluz;
+
+varying vec3 posOriginal;
+varying vec3 vligthpos;
+
+
+
+out vec4 out_Color;
+
+void main(void){
+	vec4 colort = texture2D(tex,uv);
+	vec3 normnorm = normalize(norm);
+	
+	
+	float dotres = dot(normnorm,normalize(vligthpos-posOriginal));
+	
+	
+	if(dotres < 0.1){
+		dotres += 0.1;
+	}
+	if(dotres>1){
+		dotres = 1.0;
+	}
+	
+	vec4 newColor = vec4(0,0,0,0);
+	if(ligaluz==1){
+		//newColor = vec4(colort.x,colort.y,colort.z,colort.w);
+		newColor = vec4(colort.x*dotres,colort.y*dotres,colort.z*dotres,colort.w);
+	}else{
+		newColor = vec4(colort.x,colort.y,colort.z,colort.w);
+		//newColor = vec4(1.0,colort.y,colort.z,colort.w);
+	}
+	
+	if(colort.w==0){
+		discard;
+	}else{
+		out_Color = vec4(newColor);
+	}
+}
